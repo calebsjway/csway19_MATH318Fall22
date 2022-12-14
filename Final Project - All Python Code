@@ -1,0 +1,571 @@
+# *** First General Implementation - No Visualization ***
+
+from heapq import heappush, heappop
+
+# Defining the structure of a Weighted Graph in Python
+class WeightedGraph(object):
+    def __init__(self, adjacent, weight):
+      self.adjacent = adjacent 
+      self.weight = weight
+
+  # Dijkstra's algorithm for undirected, weighted and connected graphs
+  # This function returns a parent map for a path tree from a vertex in a graph.
+    def dijkstra_tree(vertex, graph): 
+      parent = {vertex: None} # Parent map constructed through for loop
+      cost = {vertex: 0} # Weights 
+      new = [(0,vertex)] #
+      old = set() # Set of seen vertices
+      while len(new) > 0:
+        (cv,v) = heappop(new)
+        if v not in old: # ignore stale heap entries
+          old.add(v)
+          for a in graph.adjacent[v]: # For every adjacent vertex
+            ca = cv + graph.weight[(v,a)] # Add the current weight and the weight of new path
+            if a not in cost or ca < cost[a]: 
+              # If we havent seen this vertex or the cost is less than current cost:
+              parent[a] = v # Redefine current 
+              cost[a] = ca # Redefine current path
+              heappush(new, (ca,a)) # Push to stack
+      return parent
+
+  # This function returns a best
+  # path to a vertex in a graph.
+  # The path starts at root of a path tree 
+  # (represented by a parent map).
+  # If there is no path from this root to this vertex, 
+  # the function returns None. 
+    def best_path(vertex, parent):
+      if vertex not in parent: 
+        return None
+      path = [vertex]
+      while parent[vertex] is not None:
+        vertex = parent[vertex] 
+        path.append(vertex)
+      path.reverse() 
+      return path     
+      
+      
+      
+# *** Small Example Implementation and Testing ***
+ 
+A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q = "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q"
+g = WeightedGraph(
+    { # Adjacency
+      A : {B},# A
+      B : {A, C, D, E}, # B
+      C : {B, D, J}, # C
+      D : {B, C, F, I}, # D
+      E : {B, F, H}, # E
+      F : {E, D, G}, # F
+      G : {F, H, P}, # G
+      H : {E, G}, # H
+      I : {D, K}, # I
+      J : {C, K, M}, # J
+      K : {I, J, M, O, P}, # K
+      L : {J}, # L
+      M : {J, K, N}, # M
+      N : {M, O}, # N
+      O : {N, K, P, Q}, # O
+      P : {G, K, O, Q}, # P
+      Q : {O, P} # Q
+    },
+    { # Weights
+      (A, B) : 1, (B, A) : 1, # A - B
+      (B, C) : 2, (C, B) : 2, # B - C
+      (B, D) : 3, (D, B) : 3, # D - B
+      (B, E) : 4, (E, B) : 4, # B - E
+      (C, D) : 5, (D, C) : 5, # C - D
+      (C, J) : 6, (J, C) : 6, # C - J
+      (D, F) : 7, (F, D) : 7, # D - F
+      (D, I) : 8, (I, D) : 8, # D - I
+      (E, F) : 9, (F, E) : 9, # E - F
+      (E, H) : 10, (H, E) : 10, # E - H
+      (F, G) : 11, (G, F) : 11, # F - G
+      (G, H) : 12, (H, G) : 12, # G - H
+      (L, J) : 13, (J, L) : 13, # L - J
+      (J, M) : 12, (M, J) : 12, # J - M
+      (J, K) : 11, (K, J) : 11, # J - K
+      (I, K) : 10, (K, I) : 10, # I - K
+      (G, P) : 9, (P, G) : 9, # G - P
+      (M, K) : 8, (K, M) : 8, # M - K
+      (M, N) : 7, (N, M) : 7, # M - N
+      (N, O) : 6, (O, N) : 6, # N - O
+      (K, O) : 5, (O, K) : 5, # K - O
+      (K, P) : 4, (P, K) : 4, # K - P
+      (O, P) : 3, (P, O) : 3, # O - P
+      (O, Q) : 2, (Q, O) : 2, # O - Q
+      (P, Q) : 1, (Q, P) : 1 # P - Q
+    } 
+  ) 
+
+# Testing
+parent = WeightedGraph.dijkstra_tree(A, g) 
+print(WeightedGraph.best_path(M, parent))
+
+parent2 = WeightedGraph.dijkstra_tree(L, g)
+print(WeightedGraph.best_path(H, parent2))
+
+parent3 = WeightedGraph.dijkstra_tree(O, g)
+print(WeightedGraph.best_path(C, parent3))
+
+
+
+
+# *** Visual Implementation of Dijkstra Tree Algorithm ***
+
+# Visual Implementation of Dijkstra
+# We are going to use this one for our final implementation because it has a package that allows us to visualize it without manually illustrating it
+# This implemention allows for us to draw the graph within our code
+import networkx as nx
+from heapdict import heapdict
+from math import inf
+
+def dijkstra(graph, vertex):
+  # Distance is a dictionary that is full of all of the nodes within the graph.
+  # we are assigning distance[vertex] to be 0 because it is our starting vertex.
+  distance = heapdict({v:inf for v in graph.nodes()})
+  distance[vertex] = 0
+  tree = nx.Graph()
+
+  while len(distance) > 0:
+    v, v_dist = distance.popitem()
+
+  # this loop is accesing the nodes that are adjacent to the current node which is v and it is creating the variable new_dist which is the distances 
+  # from our current node to the next closes adjacent node.
+    for n in graph.neighbors(v):
+      if n in distance:
+        new_dist = v_dist + graph[v][n]['weight']
+
+        # This section of the code is comparing the new distance which consits of the current adjacent edge that we are testing and if the new one is 
+        # shorter then we update distance is remove the edge between the current node and the old shortest path and repeate.
+        if new_dist < distance[n]:
+          distance[n] = new_dist
+          tree.remove_edges_from(list(tree.edges(n)))
+          tree.add_edge(v, n, weight=graph[v][n]['weight'])
+
+# Tree is the completed dijkstras tree starting at any given vertex
+  return tree
+ 
+ 
+ 
+# *** Testing Visual Implementation With Small Example ***
+
+G = nx.DiGraph() #from x to y that is the direction 
+
+# This section creates all of the nodes within the graph
+G.add_node('A')
+G.add_node('B')
+G.add_node('C')
+G.add_node('D')
+G.add_node('E')
+G.add_node('F')
+
+# This is how you assign neighbors to nodes and also can assign their weights at this time.
+# If you want to make an edge double sided you will have to give and edge in the oposite direction.
+# the format for G.add_edge(*source*, *target*, weight=#).
+G.add_edge('A', 'B', weight=3)
+G.add_edge('A', 'C', weight=2)
+G.add_edge('B', 'C', weight=1)
+G.add_edge('B', 'E', weight=3)
+G.add_edge('C', 'D', weight=8)
+G.add_edge('E', 'F', weight=4)
+G.add_edge('D', 'F', weight=2)
+G.add_edge('B', 'D', weight=4)
+G.add_edge('E', 'D', weight=4)
+
+# This section is all formating of the graph below.
+# The layout section gives the nodes their positioning and format.
+# nx.draw() creates the graph visual and has parameters that allow you to custimize the individual apsects within the graph.
+# edge_labels acceses the dictionary created by g.add_node and retrieves the names and or weights of each edge.
+layout = nx.drawing.nx_pydot.graphviz_layout(G, prog='sfdp')
+nx.draw(G, layout, with_labels=True, node_size=1000, node_color='red', font_size=24)
+edge_labels = nx.drawing.draw_networkx_edge_labels(G, layout, nx.get_edge_attributes(G, 'weight'), font_size=24)
+
+# dijkstra_tree is the graph that is return by calling the function dijkstra(*graph*, *vertex*).
+dijkstra_tree = dijkstra(G, 'B')
+
+# The graph that is created shows the shortest paths from the starting vertex 'B' to every other vertex in graph G.
+nx.draw(dijkstra_tree, layout, with_labels=True, node_size=1000, node_color='red', font_size=24)
+edge_labels = nx.drawing.draw_networkx_edge_labels(G, layout, nx.get_edge_attributes(dijkstra_tree, 'weight'), font_size=24)
+
+
+
+# *** General Campus Map and Dijkstra Tree With Flint Hall as Source Vertex ***
+
+# Definitions of variables
+# Each variable defined within this section is the name of the nodes.
+miner_main = "Miner & Main Intersection"
+miner_pine = "Miner & Pine Intersection"
+miner_west = "Miner & West Intersection"
+miner_lincoln = "Miner & Lincoln Intersection"
+miner_maple = "Miner & Maple Intersection"
+appleton = "Appleton Arena"
+mollys_icecream = "Molly's Icecream"
+park_pine = "Park & Pine Intersection"
+park_west = "Park & West Intersection"
+park_48 = "48 Park St."
+KDS_int = "KDS Sorority Intersection"
+OC_int = "Outing Club Intersection"
+mechanic_lincoln = "Mechanic & Lincoln Intersection"
+college_cl_licoln = "College Cl. & Lincoln Intersection"
+college_cl_deadend = "End of College Cl."
+mechanic_maple = "Mechanic & Maple Intersection"
+augsbury = "Augsbury Athletic Hall"
+bewkes = "Bewkes Hall"
+park_SLU = "Park & SLU Ave. Intersection"
+church = "Church Corner"
+green_corner = "Inside Green Corner"
+parkpl_deadend = "End of Park Pl."
+XO = "XO"
+jay_deadend = "End of Jay St."
+light_house = "The Light House"
+main_college = "College & Main Intersection"
+beta = "Beta Fraternity"
+ato_int = "ATO Fraternity Intersection"
+vilas_int = "Vilas Intersection"
+deane_hill_top = "Top of Deane Hill"
+deane_hill_bottom = "Bottom of Dean Hill"
+kd_path = "Kirk Douglas Path"
+dana = "Dana Dining Hall"
+sc = "Student Center"
+brewer_cross = "Brewer Crosswalk"
+piskor = "Piskor Hall"
+johnson = "Johnson Hall of Science"
+rebert = "Rebert Dormitories"
+madill = "Madill Hall"
+brown = "Brown Hall"
+lee = "Lee Dormitories"
+flint = "Flint Hall & Valentine Hall"
+intramural_int = "Corner of Intramural Fields"
+arts_annex = "Arts Annex"
+p_house = "Presidents House"
+hillside_deadend = "End of Hillside Cl."
+main_hillside = "Main & Hillside Intersection"
+main_SLU = "SLU Main Entrance"
+gaines = "Gaines Intersection"
+pub_56 = "Pub 56 and suites"
+pub_56_parking = "Pub 56 Parking Lot"
+b_lot_entrance = "B Lot Entrance"
+th_entrance = "Townhouse Entrance"
+art_building = "Art Building"
+townies = "Townhouses"
+park_flint = "Corner of Park and Flint Hall"
+payson = "Payson Hall"
+priest_reiff = "Priest and Reiff"
+sykes = "Sykes Hall"
+bagel = "Bagelry Intersection"
+atwood_path = "Atwood Path"
+atwood = "Atwood Hall"
+herring_cole = "Herring Cole Hall"
+richardson = "Richardson Hall"
+chapel_entrance = "Chapel entrance"
+chapel = "Chapel"
+whitman = "Whitman"
+heat_plnt = "Heating Plant"
+carnegie = "Carnegie"
+ODY = "ODY"
+hepburn = "Hepburn"
+deane = "Deane Hall"
+
+# Adjacency / Weight matrix
+from operator import ge
+import networkx as nx
+import matplotlib.pyplot as plt
+genCampMap = nx.DiGraph()
+
+# This section creates all of nodes based on the defined names in the cell above.
+genCampMap.add_node(deane)
+genCampMap.add_node(hepburn)
+genCampMap.add_node(ODY)
+genCampMap.add_node(carnegie)
+genCampMap.add_node(heat_plnt)
+genCampMap.add_node(whitman)
+genCampMap.add_node(chapel)
+genCampMap.add_node(chapel_entrance)
+genCampMap.add_node(herring_cole)
+genCampMap.add_node(richardson)
+genCampMap.add_node(atwood)
+genCampMap.add_node(priest_reiff)
+genCampMap.add_node(payson)
+genCampMap.add_node(park_flint)
+genCampMap.add_node(townies)
+genCampMap.add_node(miner_main)
+genCampMap.add_node(art_building)
+genCampMap.add_node(miner_pine)
+genCampMap.add_node(miner_west)
+genCampMap.add_node(miner_lincoln)
+genCampMap.add_node(miner_maple)
+genCampMap.add_node(appleton)
+genCampMap.add_node(mollys_icecream)
+genCampMap.add_node(park_pine)
+genCampMap.add_node(park_west)
+genCampMap.add_node(park_48)
+genCampMap.add_node(KDS_int)
+genCampMap.add_node(OC_int)
+genCampMap.add_node(mechanic_lincoln)
+genCampMap.add_node(college_cl_licoln)
+genCampMap.add_node(college_cl_deadend)
+genCampMap.add_node(mechanic_maple)
+genCampMap.add_node(augsbury)
+genCampMap.add_node(bewkes)
+genCampMap.add_node(park_SLU)
+genCampMap.add_node(church)
+genCampMap.add_node(green_corner)
+genCampMap.add_node(parkpl_deadend)
+genCampMap.add_node(XO)
+genCampMap.add_node(jay_deadend)
+genCampMap.add_node(light_house)
+genCampMap.add_node(main_college)
+genCampMap.add_node(beta)
+genCampMap.add_node(ato_int)
+genCampMap.add_node(vilas_int )
+genCampMap.add_node(deane_hill_top)
+genCampMap.add_node(deane_hill_bottom)
+genCampMap.add_node(kd_path)
+genCampMap.add_node(dana)
+genCampMap.add_node(sc)
+genCampMap.add_node(brewer_cross)
+genCampMap.add_node(piskor)
+genCampMap.add_node(johnson)
+genCampMap.add_node(rebert)
+genCampMap.add_node(madill)
+genCampMap.add_node(brown)
+genCampMap.add_node(lee)
+genCampMap.add_node(flint)
+genCampMap.add_node(intramural_int)
+genCampMap.add_node(arts_annex)
+genCampMap.add_node(p_house)
+genCampMap.add_node(hillside_deadend)
+genCampMap.add_node(main_hillside)
+genCampMap.add_node(main_SLU)
+genCampMap.add_node(gaines)
+genCampMap.add_node(pub_56)
+genCampMap.add_node(pub_56_parking)
+genCampMap.add_node(b_lot_entrance)
+genCampMap.add_node(th_entrance)
+genCampMap.add_node(sykes)
+genCampMap.add_node(bagel)
+genCampMap.add_node(atwood_path)
+
+# This section is adding every pair of adjacencies with their correcponding weights. 
+# Since you can travel either direction on all rodes and walkways at SLU each directed edge needed to be added in both directions. 
+genCampMap.add_edge(main_SLU, gaines, weight=448)
+genCampMap.add_edge(gaines ,main_SLU, weight=448)
+genCampMap.add_edge(main_SLU, main_hillside, weight=399)
+genCampMap.add_edge(main_hillside, main_SLU, weight=399)
+genCampMap.add_edge(main_hillside, main_college, weight=245)
+genCampMap.add_edge(main_college, main_hillside, weight=245)
+genCampMap.add_edge(p_house, main_hillside, weight=150)
+genCampMap.add_edge(main_hillside, p_house, weight=150)
+genCampMap.add_edge(p_house, hillside_deadend, weight=67)
+genCampMap.add_edge(hillside_deadend, p_house, weight=67)
+genCampMap.add_edge(arts_annex, p_house, weight=218)
+genCampMap.add_edge(p_house, arts_annex, weight=218)
+genCampMap.add_edge(gaines, arts_annex, weight=109)
+genCampMap.add_edge(arts_annex, gaines, weight=109)
+genCampMap.add_edge(gaines, pub_56, weight=176)
+genCampMap.add_edge(pub_56, gaines, weight=176)
+genCampMap.add_edge(pub_56, pub_56_parking, weight=85)
+genCampMap.add_edge(pub_56_parking, pub_56, weight=85)
+genCampMap.add_edge(pub_56, art_building, weight=177)
+genCampMap.add_edge(art_building, pub_56, weight=177)
+genCampMap.add_edge(pub_56, b_lot_entrance, weight=108)
+genCampMap.add_edge(b_lot_entrance, pub_56, weight=108)
+genCampMap.add_edge(b_lot_entrance, th_entrance, weight=143)
+genCampMap.add_edge(th_entrance, b_lot_entrance, weight=143)
+genCampMap.add_edge(th_entrance, townies, weight=183)
+genCampMap.add_edge(townies, th_entrance, weight=183)
+genCampMap.add_edge(townies, lee, weight=247)
+genCampMap.add_edge(lee, townies, weight=247)
+genCampMap.add_edge(lee, flint, weight=200)
+genCampMap.add_edge(flint, lee, weight=200)
+genCampMap.add_edge(lee, intramural_int, weight=263)
+genCampMap.add_edge(intramural_int, lee, weight=263)
+genCampMap.add_edge(park_SLU, intramural_int, weight=211)
+genCampMap.add_edge(intramural_int, park_SLU, weight=211)
+genCampMap.add_edge(park_flint, park_SLU, weight=156)
+genCampMap.add_edge(park_SLU, park_flint, weight=156)
+genCampMap.add_edge(park_flint, bewkes, weight=76)
+genCampMap.add_edge(bewkes, park_flint, weight=76)
+genCampMap.add_edge(flint, park_flint, weight=153)
+genCampMap.add_edge(park_flint, flint, weight=153)
+genCampMap.add_edge(bewkes, augsbury, weight=95)
+genCampMap.add_edge(augsbury, bewkes, weight=95)
+genCampMap.add_edge(bewkes, payson, weight=101)
+genCampMap.add_edge(payson, bewkes, weight=101)
+genCampMap.add_edge(augsbury, appleton, weight=335)
+genCampMap.add_edge(appleton, augsbury, weight=335)
+genCampMap.add_edge(brewer_cross, payson, weight=87)
+genCampMap.add_edge(payson, brewer_cross, weight=87)
+genCampMap.add_edge(appleton, miner_maple, weight=204)
+genCampMap.add_edge(miner_maple, appleton, weight=204)
+genCampMap.add_edge(mechanic_maple, miner_maple, weight=150)
+genCampMap.add_edge(miner_maple, mechanic_maple, weight=150)
+genCampMap.add_edge(priest_reiff, mechanic_maple, weight=127)
+genCampMap.add_edge(mechanic_maple, priest_reiff, weight=127)
+genCampMap.add_edge(sykes, priest_reiff, weight=98)
+genCampMap.add_edge(priest_reiff, sykes, weight=98)
+genCampMap.add_edge(brewer_cross, sykes, weight=47)
+genCampMap.add_edge(sykes, brewer_cross, weight=47)
+genCampMap.add_edge(miner_lincoln, miner_maple, weight=282)
+genCampMap.add_edge(miner_maple, miner_lincoln, weight=282)
+genCampMap.add_edge(miner_lincoln, miner_west, weight=321)
+genCampMap.add_edge(miner_west, miner_lincoln, weight=321)
+genCampMap.add_edge(miner_west, miner_pine, weight=95)
+genCampMap.add_edge(miner_pine, miner_west, weight=95)
+genCampMap.add_edge(miner_main, miner_pine, weight=292)
+genCampMap.add_edge(miner_pine, miner_main, weight=292)
+genCampMap.add_edge(mechanic_maple, mechanic_lincoln, weight=277)
+genCampMap.add_edge(mechanic_lincoln, mechanic_maple, weight=277)
+genCampMap.add_edge(miner_lincoln, mechanic_lincoln, weight=100)
+genCampMap.add_edge(mechanic_lincoln, miner_lincoln, weight=100)
+genCampMap.add_edge(college_cl_licoln, mechanic_lincoln, weight=66)
+genCampMap.add_edge(mechanic_lincoln, college_cl_licoln, weight=66)
+genCampMap.add_edge(college_cl_licoln, college_cl_deadend, weight=79)
+genCampMap.add_edge(college_cl_deadend, college_cl_licoln, weight=79)
+genCampMap.add_edge(college_cl_licoln, OC_int, weight=157)
+genCampMap.add_edge(OC_int, college_cl_licoln, weight=157)
+genCampMap.add_edge(OC_int, sykes, weight=273)
+genCampMap.add_edge(sykes, OC_int, weight=273)
+genCampMap.add_edge(miner_west, park_west, weight=258)
+genCampMap.add_edge(park_west, miner_west, weight=258)
+genCampMap.add_edge(miner_pine, park_pine, weight=256)
+genCampMap.add_edge(park_pine, miner_pine, weight=256)
+genCampMap.add_edge(KDS_int, OC_int, weight=79)
+genCampMap.add_edge(OC_int, KDS_int, weight=79)
+genCampMap.add_edge(KDS_int, park_48, weight=116)
+genCampMap.add_edge(park_48, KDS_int, weight=116)
+genCampMap.add_edge(park_48, park_west, weight=100)
+genCampMap.add_edge(park_west, park_48, weight=100)
+genCampMap.add_edge(park_west, park_pine, weight=103)
+genCampMap.add_edge(park_pine, park_west, weight=103)
+genCampMap.add_edge(park_pine, mollys_icecream, weight=89)
+genCampMap.add_edge(mollys_icecream, park_pine, weight=89)
+genCampMap.add_edge(mollys_icecream, bagel, weight=97)
+genCampMap.add_edge(mollys_icecream, bagel, weight=97)
+genCampMap.add_edge(bagel, miner_main, weight=170)
+genCampMap.add_edge(miner_main, bagel, weight=170)
+genCampMap.add_edge(mollys_icecream, green_corner, weight=132)
+genCampMap.add_edge(green_corner, mollys_icecream, weight=132)
+genCampMap.add_edge(green_corner, church, weight=78)
+genCampMap.add_edge(church, green_corner, weight=78)
+genCampMap.add_edge(green_corner, parkpl_deadend, weight=98)
+genCampMap.add_edge(parkpl_deadend, green_corner, weight=98)
+genCampMap.add_edge(church, bagel, weight=162)
+genCampMap.add_edge(bagel, church, weight=162)
+genCampMap.add_edge(main_college, church, weight=260)
+genCampMap.add_edge(church, main_college, weight=260)
+genCampMap.add_edge(main_college, light_house, weight=189)
+genCampMap.add_edge(light_house, main_college, weight=189)
+genCampMap.add_edge(light_house, beta, weight=107)
+genCampMap.add_edge(beta, light_house, weight=107)
+genCampMap.add_edge(light_house, XO, weight=139)
+genCampMap.add_edge(XO, light_house, weight=139)
+genCampMap.add_edge(XO, jay_deadend, weight=225)
+genCampMap.add_edge(jay_deadend,XO,  weight=225)
+genCampMap.add_edge(XO, park_48, weight=189)
+genCampMap.add_edge(park_48, XO, weight=189)
+genCampMap.add_edge(beta, ato_int, weight=52)
+genCampMap.add_edge(ato_int, beta, weight=52)
+genCampMap.add_edge(ato_int, KDS_int, weight=275)
+genCampMap.add_edge(KDS_int, ato_int, weight=275)
+genCampMap.add_edge(ato_int, atwood_path, weight=52)
+genCampMap.add_edge(atwood_path, ato_int, weight=52)
+genCampMap.add_edge(atwood_path, vilas_int, weight=43)
+genCampMap.add_edge(vilas_int, atwood_path, weight=43)
+genCampMap.add_edge(atwood_path, atwood, weight=33)
+genCampMap.add_edge(atwood, atwood_path, weight=33)
+genCampMap.add_edge(atwood, richardson, weight=41)
+genCampMap.add_edge(richardson, atwood, weight=41)
+genCampMap.add_edge(atwood, herring_cole, weight=41)
+genCampMap.add_edge(herring_cole, atwood, weight=41)
+genCampMap.add_edge(richardson, herring_cole, weight=41)
+genCampMap.add_edge(herring_cole, richardson, weight=41)
+genCampMap.add_edge(richardson, vilas_int, weight=37)
+genCampMap.add_edge(vilas_int, richardson, weight=37)
+genCampMap.add_edge(vilas_int, chapel_entrance, weight=55)
+genCampMap.add_edge(chapel_entrance, vilas_int, weight=55)
+genCampMap.add_edge(chapel_entrance, deane_hill_top, weight=72)
+genCampMap.add_edge(deane_hill_top, chapel_entrance, weight=72)
+genCampMap.add_edge(chapel, chapel_entrance, weight=36)
+genCampMap.add_edge(chapel_entrance, chapel, weight=36)
+genCampMap.add_edge(vilas_int, kd_path, weight=125)
+genCampMap.add_edge(kd_path, vilas_int, weight=125)
+genCampMap.add_edge(kd_path, arts_annex, weight=91)
+genCampMap.add_edge(arts_annex, kd_path, weight=91)
+genCampMap.add_edge(art_building, kd_path, weight=60)
+genCampMap.add_edge(kd_path, art_building, weight=60)
+genCampMap.add_edge(kd_path, deane_hill_bottom, weight=138)
+genCampMap.add_edge(deane_hill_bottom, kd_path, weight=138)
+genCampMap.add_edge(deane_hill_bottom, deane_hill_top, weight=108)
+genCampMap.add_edge(deane_hill_top, deane_hill_bottom, weight=108)
+genCampMap.add_edge(deane_hill_bottom, whitman, weight=70)
+genCampMap.add_edge(whitman, deane_hill_bottom, weight=70)
+genCampMap.add_edge(whitman, heat_plnt, weight=100)
+genCampMap.add_edge(heat_plnt, whitman, weight=100)
+genCampMap.add_edge(whitman, rebert, weight=185)
+genCampMap.add_edge(rebert, whitman, weight=185)
+genCampMap.add_edge(carnegie, deane_hill_top, weight=51)
+genCampMap.add_edge(deane_hill_top, carnegie, weight=51)
+genCampMap.add_edge(carnegie, ODY, weight=118)
+genCampMap.add_edge(ODY, carnegie, weight=118)
+genCampMap.add_edge(ODY, hepburn, weight=142)
+genCampMap.add_edge(hepburn, ODY, weight=142)
+genCampMap.add_edge(hepburn, carnegie, weight=109)
+genCampMap.add_edge(carnegie, hepburn, weight=109)
+genCampMap.add_edge(deane, carnegie, weight=45)
+genCampMap.add_edge(carnegie, deane, weight=45)
+genCampMap.add_edge(dana, deane, weight=26)
+genCampMap.add_edge(deane, dana, weight=26)
+genCampMap.add_edge(sc, deane, weight=92)
+genCampMap.add_edge(deane, sc, weight=92)
+genCampMap.add_edge(sc, rebert, weight=121)
+genCampMap.add_edge(rebert, sc, weight=121)
+genCampMap.add_edge(sc, piskor, weight=48)
+genCampMap.add_edge(piskor, sc, weight=48)
+genCampMap.add_edge(piskor, brewer_cross, weight=69)
+genCampMap.add_edge(brewer_cross, piskor, weight=69)
+genCampMap.add_edge(piskor, johnson, weight=81)
+genCampMap.add_edge(johnson, piskor, weight=81)
+genCampMap.add_edge(rebert, madill, weight=136)
+genCampMap.add_edge(madill, rebert, weight=136)
+genCampMap.add_edge(rebert, lee, weight=134)
+genCampMap.add_edge(lee, rebert, weight=134)
+genCampMap.add_edge(madill, brown, weight=90)
+genCampMap.add_edge(brown, madill, weight=90)
+genCampMap.add_edge(brown, flint, weight=63)
+genCampMap.add_edge(flint, brown, weight=63)
+
+# This is the map generated by adding all the nodes and edges that we included on our ARK_GIS map
+layout = nx.drawing.nx_pydot.graphviz_layout(genCampMap, prog='sfdp')
+nx.draw(genCampMap, layout, with_labels=True, node_size=1000, node_color='red', font_size=24)
+edge_labels = nx.drawing.draw_networkx_edge_labels(genCampMap, layout, nx.get_edge_attributes(genCampMap, 'weight'), font_size=24)
+
+# This is the final map produced after we altered the veiwing window and altered the parameters of the nodes and edges.
+layout = nx.drawing.nx_pydot.graphviz_layout(genCampMap, prog='sfdp')
+fig = plt.figure(1,figsize=(200,80),dpi=100)
+nx.draw(genCampMap, layout, with_labels=True, node_size=300, node_color='red', font_size=70, linewidths=20)
+edge_labels = nx.drawing.draw_networkx_edge_labels(genCampMap, layout, nx.get_edge_attributes(genCampMap, 'weight'), font_size=70)
+
+# This is the dijkstra tree that is generated after we call the dijkstra() function on the campus map that we created in the cell above.
+# The dijkstra function written above is implemented to illustrate the full dijkstra traversal from any given starting point.
+dijkstra_tree = dijkstra(genCampMap, flint) #****THIS IS WHAT WE CHANGE FOR CLASS EXAMPLE*****
+fig = plt.figure(1,figsize=(200,80),dpi=100)
+nx.draw(dijkstra_tree, layout, with_labels=True, node_size=1200, node_color='red', font_size=80)
+edge_labels = nx.drawing.draw_networkx_edge_labels(genCampMap, layout, nx.get_edge_attributes(dijkstra_tree, 'weight'), font_size=80)
+
+# This section grabs all of the weights that are generated on our orginal map and using a traversal that uses dijkstras to find the shortest path and adds up the weigths.
+length = nx.shortest_path_length(dijkstra_tree, source=flint, target=vilas_int, weight='weight') #**** CHANGE THIS FOR IN CLASS EXAMPLE*****
+path = nx.shortest_path(dijkstra_tree, source=flint, target=vilas_int, weight='weight')
+print(str(path) + " with a length of " + str(length) + " Meters")
+
+path_dict = nx.shortest_path(dijkstra_tree, flint) 
+for target in path_dict:
+  print(path_dict[target])
+  
+print("The average walk starting at Flint Hall / Valentine Hall is "+ str(round(nx.average_shortest_path_length(dijkstra_tree, weight='weight'))) + " Meters")
+
+# this loop generates the shortest paths between a designated point to every single other point on the graph and also gives their correcponding distances.
+weight_dict, path_dict = nx.single_source_dijkstra(dijkstra_tree, flint) #****CHANGE ME DURING CLASS EXAMPLE****  
+for target in path_dict:
+  print((str(path_dict[target]) +" "+ str(weight_dict[target]) + " Meters"))
